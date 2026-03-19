@@ -21,6 +21,21 @@ public class Main {
     private final JFrame frame = new JFrame("Insurance Quote App");
     private final JPanel cards = new JPanel(new CardLayout());
 
+    private final Repository repo = new Repository();
+    private final QuoteCalculator calculator = new QuoteCalculator();
+
+    private JComboBox<String> makeCb, modelCb, yearCb, engineCb, colourCb;
+    private JComboBox<String> ageCb, ncbCb;
+    private JToggleButton policyThirdParty, policyTpft, policyComprehensive;
+
+    private JTextField nameTf, surnameTf, addressTf, phoneTf, emailTf;
+    private JPasswordField passwordPf;
+
+    private JLabel qVehicle, qPolicy, qAge, qNcb, qPrice, qStatus;
+
+    private Customer currentCustomer;
+    private Quote currentQuote;
+
     public static void main(String[] ignored) {
         SwingUtilities.invokeLater(() -> new Main().start());
     }
@@ -94,10 +109,7 @@ public class Main {
     }
 
     private void onClick(JButton b, Runnable action) {
-        b.addActionListener(e -> {
-            e.getID();
-            action.run();
-        });
+        b.addActionListener(evt -> action.run());
     }
 
     private JTextField textField() {
@@ -127,7 +139,6 @@ public class Main {
         cb.setBackground(Color.WHITE);
         cb.setForeground(Color.BLACK);
         cb.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        cb.addItem("");
         Dimension d = new Dimension(w, COMBO_H);
         cb.setPreferredSize(d);
         cb.setMaximumSize(d);
@@ -140,24 +151,6 @@ public class Main {
         top.add(labelLeft(title, 18), BorderLayout.WEST);
         top.add(progressLabel(step), BorderLayout.EAST);
         return top;
-    }
-
-    private JPanel navBar(String backCard, String nextCard) {
-        JPanel nav = new JPanel(new BorderLayout());
-        nav.setBackground(Color.WHITE);
-
-        JButton back = button("Back");
-        JButton next = button("Next");
-
-        back.setPreferredSize(new Dimension(BTN_W, BTN_H));
-        next.setPreferredSize(new Dimension(BTN_W, BTN_H));
-
-        onClick(back, () -> showCard(backCard));
-        onClick(next, () -> showCard(nextCard));
-
-        nav.add(back, BorderLayout.WEST);
-        nav.add(next, BorderLayout.EAST);
-        return nav;
     }
 
     // Screen 1
@@ -174,7 +167,7 @@ public class Main {
         newQuote.setAlignmentX(Component.CENTER_ALIGNMENT);
         onClick(newQuote, () -> showCard(CARDS[1]));
 
-        JLabel resume = labelCenter("Some stuff about generating a qute for new customers, no login needed etc.", 12);
+        JLabel resume = labelCenter("Resume a saved quote", 12);
         resume.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JSeparator sep = new JSeparator();
@@ -234,12 +227,35 @@ public class Main {
 
         JPanel row1Fields = new JPanel(new GridLayout(1, 3, 12, 0));
         row1Fields.setBackground(Color.WHITE);
-        JComboBox<String> make = comboBox(COMBO_W);
-        JComboBox<String> model = comboBox(COMBO_W);
-        JComboBox<String> year = comboBox(COMBO_W);
-        row1Fields.add(make);
-        row1Fields.add(model);
-        row1Fields.add(year);
+
+        makeCb = comboBox(COMBO_W);
+        modelCb = comboBox(COMBO_W);
+        yearCb = comboBox(COMBO_W);
+
+        makeCb.addItem("");
+        for (String make : CarData.getMakes()) {
+            makeCb.addItem(make);
+        }
+
+        modelCb.addItem("");
+
+        makeCb.addActionListener(evt -> {
+            String selectedMake = safe(makeCb.getSelectedItem());
+
+            modelCb.removeAllItems();
+            modelCb.addItem("");
+
+            for (String m : CarData.getModelsForMake(selectedMake)) {
+                modelCb.addItem(m);
+            }
+        });
+
+        yearCb.addItem("");
+        for (int y = 2010; y <= 2026; y++) yearCb.addItem(String.valueOf(y));
+
+        row1Fields.add(makeCb);
+        row1Fields.add(modelCb);
+        row1Fields.add(yearCb);
 
         JPanel row2Labels = new JPanel(new GridLayout(1, 2, 12, 0));
         row2Labels.setBackground(Color.WHITE);
@@ -248,10 +264,25 @@ public class Main {
 
         JPanel row2Fields = new JPanel(new GridLayout(1, 2, 12, 0));
         row2Fields.setBackground(Color.WHITE);
-        JComboBox<String> engine = comboBox(330);
-        JComboBox<String> colour = comboBox(330);
-        row2Fields.add(engine);
-        row2Fields.add(colour);
+
+        engineCb = comboBox(330);
+        colourCb = comboBox(330);
+
+        engineCb.addItem("");
+        engineCb.addItem("1.0");
+        engineCb.addItem("1.2");
+        engineCb.addItem("1.4");
+        engineCb.addItem("1.6");
+        engineCb.addItem("2.0+");
+
+        colourCb.addItem("");
+        colourCb.addItem("Black");
+        colourCb.addItem("White");
+        colourCb.addItem("Silver");
+        colourCb.addItem("Blue");
+
+        row2Fields.add(engineCb);
+        row2Fields.add(colourCb);
 
         form.add(row1Labels);
         form.add(Box.createVerticalStrut(6));
@@ -261,12 +292,24 @@ public class Main {
         form.add(Box.createVerticalStrut(6));
         form.add(row2Fields);
 
+        JPanel nav = new JPanel(new BorderLayout());
+        nav.setBackground(Color.WHITE);
+
+        JButton back = button("Back");
+        JButton next = button("Next");
+
+        onClick(back, () -> showCard(CARDS[0]));
+        onClick(next, () -> showCard(CARDS[2]));
+
+        nav.add(back, BorderLayout.WEST);
+        nav.add(next, BorderLayout.EAST);
+
         wrapper.add(Box.createVerticalStrut(18));
         wrapper.add(form);
         wrapper.add(Box.createVerticalGlue());
 
         root.add(wrapper, BorderLayout.CENTER);
-        root.add(navBar(CARDS[0], CARDS[2]), BorderLayout.SOUTH);
+        root.add(nav, BorderLayout.SOUTH);
         return root;
     }
 
@@ -293,23 +336,29 @@ public class Main {
         JPanel fields = new JPanel(new GridLayout(1, 2, 12, 0));
         fields.setBackground(Color.WHITE);
 
-        JComboBox<String> age = comboBox(240);
-        JComboBox<String> ncb = comboBox(240);
+        ageCb = comboBox(240);
+        ncbCb = comboBox(240);
 
-        age.removeAllItems();
-        age.addItem("");
-        for (int i = 17; i <= 80; i++) {
-            age.addItem(String.valueOf(i));
-        }
+        ageCb.addItem("");
+        for (int i = 17; i <= 80; i++) ageCb.addItem(String.valueOf(i));
 
-        ncb.removeAllItems();
-        ncb.addItem("");
-        for (int i = 0; i <= 15; i++) {
-            ncb.addItem(String.valueOf(i));
-        }
+        ncbCb.addItem("");
+        for (int i = 0; i <= 15; i++) ncbCb.addItem(String.valueOf(i));
 
-        fields.add(age);
-        fields.add(ncb);
+        fields.add(ageCb);
+        fields.add(ncbCb);
+
+        JPanel nav = new JPanel(new BorderLayout());
+        nav.setBackground(Color.WHITE);
+
+        JButton back = button("Back");
+        JButton next = button("Next");
+
+        onClick(back, () -> showCard(CARDS[1]));
+        onClick(next, () -> showCard(CARDS[3]));
+
+        nav.add(back, BorderLayout.WEST);
+        nav.add(next, BorderLayout.EAST);
 
         form.add(labels);
         form.add(Box.createVerticalStrut(6));
@@ -320,9 +369,10 @@ public class Main {
         wrapper.add(Box.createVerticalGlue());
 
         root.add(wrapper, BorderLayout.CENTER);
-        root.add(navBar(CARDS[1], CARDS[3]), BorderLayout.SOUTH);
+        root.add(nav, BorderLayout.SOUTH);
         return root;
     }
+
     // Screen 4
     private JPanel policyScreen() {
         JPanel root = basePanel();
@@ -339,37 +389,39 @@ public class Main {
 
         ButtonGroup group = new ButtonGroup();
 
-        JToggleButton thirdParty = policyCard(
-                "Third Party",
-                new String[]{"Injury to others", "Damage to others", "No cover for own car"}
-        );
+        policyThirdParty = policyCard("Third Party", new String[]{"Injury to others", "Damage to others", "No cover for own car"});
+        policyTpft = policyCard("Third Party, Fire & Theft", new String[]{"Third Party cover", "Fire damage", "Theft cover"});
+        policyComprehensive = policyCard("Comprehensive", new String[]{"Own car damage", "Third Party cover", "Fire & theft included"});
 
-        JToggleButton tpft = policyCard(
-                "Third Party, Fire & Theft",
-                new String[]{"Third Party cover", "Fire damage", "Theft cover"}
-        );
+        group.add(policyThirdParty);
+        group.add(policyTpft);
+        group.add(policyComprehensive);
 
-        JToggleButton comp = policyCard(
-                "Comprehensive",
-                new String[]{"Own car damage", "Third Party cover", "Fire & theft included"}
-        );
+        cardsRow.add(policyThirdParty);
+        cardsRow.add(policyTpft);
+        cardsRow.add(policyComprehensive);
 
-        group.add(thirdParty);
-        group.add(tpft);
-        group.add(comp);
+        JPanel nav = new JPanel(new BorderLayout());
+        nav.setBackground(Color.WHITE);
 
-        cardsRow.add(thirdParty);
-        cardsRow.add(tpft);
-        cardsRow.add(comp);
+        JButton back = button("Back");
+        JButton next = button("Next");
+
+        onClick(back, () -> showCard(CARDS[2]));
+        onClick(next, () -> showCard(CARDS[4]));
+
+        nav.add(back, BorderLayout.WEST);
+        nav.add(next, BorderLayout.EAST);
 
         wrapper.add(Box.createVerticalStrut(50));
         wrapper.add(cardsRow);
         wrapper.add(Box.createVerticalGlue());
 
         root.add(wrapper, BorderLayout.CENTER);
-        root.add(navBar(CARDS[2], CARDS[4]), BorderLayout.SOUTH);
+        root.add(nav, BorderLayout.SOUTH);
         return root;
     }
+
     private JToggleButton policyCard(String title, String[] lines) {
         JToggleButton b = new JToggleButton();
         b.setLayout(new BorderLayout());
@@ -405,7 +457,7 @@ public class Main {
         b.add(header, BorderLayout.NORTH);
         b.add(list, BorderLayout.CENTER);
 
-        b.addItemListener(e -> {
+        b.addItemListener(evt -> {
             b.setBackground(Color.WHITE);
             header.setBackground(Color.WHITE);
             list.setBackground(Color.WHITE);
@@ -418,6 +470,7 @@ public class Main {
 
         return b;
     }
+
     // Screen 5
     private JPanel personalScreen() {
         JPanel root = basePanel();
@@ -437,26 +490,38 @@ public class Main {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
 
-        JTextField name = textField();
-        JTextField surname = textField();
-        JTextField address = textField();
-        JTextField phone = textField();
-        JTextField email = textField();
-        JPasswordField password = passField();
+        nameTf = textField();
+        surnameTf = textField();
+        addressTf = textField();
+        phoneTf = textField();
+        emailTf = textField();
+        passwordPf = passField();
 
-        addRow(form, gbc, 0, "Name", name);
-        addRow(form, gbc, 1, "Surname", surname);
-        addRow(form, gbc, 2, "Address", address);
-        addRow(form, gbc, 3, "Phone", phone);
-        addRow(form, gbc, 4, "Email", email);
-        addRow(form, gbc, 5, "Password", password);
+        addRow(form, gbc, 0, "Name", nameTf);
+        addRow(form, gbc, 1, "Surname", surnameTf);
+        addRow(form, gbc, 2, "Address", addressTf);
+        addRow(form, gbc, 3, "Phone", phoneTf);
+        addRow(form, gbc, 4, "Email", emailTf);
+        addRow(form, gbc, 5, "Password", passwordPf);
+
+        JPanel nav = new JPanel(new BorderLayout());
+        nav.setBackground(Color.WHITE);
+
+        JButton back = button("Back");
+        JButton next = button("Next");
+
+        onClick(back, () -> showCard(CARDS[3]));
+        onClick(next, this::createCustomerAndQuote);
+
+        nav.add(back, BorderLayout.WEST);
+        nav.add(next, BorderLayout.EAST);
 
         wrapper.add(Box.createVerticalStrut(18));
         wrapper.add(form);
         wrapper.add(Box.createVerticalGlue());
 
         root.add(wrapper, BorderLayout.CENTER);
-        root.add(navBar(CARDS[3], CARDS[5]), BorderLayout.SOUTH);
+        root.add(nav, BorderLayout.SOUTH);
         return root;
     }
 
@@ -473,24 +538,110 @@ public class Main {
         gbc.anchor = GridBagConstraints.EAST;
         panel.add(field, gbc);
     }
+
+    private void createCustomerAndQuote() {
+        String name = safe(nameTf.getText());
+        String surname = safe(surnameTf.getText());
+        String address = safe(addressTf.getText());
+        String phone = safe(phoneTf.getText());
+        String email = safe(emailTf.getText());
+        String password = new String(passwordPf.getPassword());
+
+        currentCustomer = repo.createCustomer(name, surname, address, phone, email, password);
+
+        String make = safe(makeCb.getSelectedItem());
+        String model = safe(modelCb.getSelectedItem());
+        String year = safe(yearCb.getSelectedItem());
+
+        String vehicleText = (make + " " + model + " " + year).trim();
+
+        int age = parseIntSafe(ageCb.getSelectedItem(), 0);
+        int ncb = parseIntSafe(ncbCb.getSelectedItem(), 0);
+
+        String engine = safe(engineCb.getSelectedItem());
+        String policy = selectedPolicyText();
+
+        double basePrice = basePriceByMake(make);
+        double premium = calculator.calculate(basePrice, age, ncb, policy);
+        premium = premium * engineFactor(engine);
+        premium = round2(premium);
+
+        currentQuote = repo.createQuote(currentCustomer, vehicleText, age, ncb, policy, premium);
+
+        updateQuoteLabels();
+        showCard(CARDS[5]);
+    }
+
+    private String safe(Object v) {
+        return v == null ? "" : String.valueOf(v).trim();
+    }
+
+    private int parseIntSafe(Object v, int fallback) {
+        try {
+            String s = safe(v);
+            if (s.isEmpty()) return fallback;
+            return Integer.parseInt(s);
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
+    private String selectedPolicyText() {
+        if (policyTpft != null && policyTpft.isSelected()) return "Third Party, Fire & Theft";
+        if (policyComprehensive != null && policyComprehensive.isSelected()) return "Comprehensive";
+        return "Third Party";
+    }
+
+    private double basePriceByMake(String make) {
+        String m = make == null ? "" : make.toLowerCase();
+        if (m.contains("ford")) return 450;
+        if (m.contains("vauxhall")) return 440;
+        if (m.contains("volkswagen")) return 500;
+        if (m.contains("toyota")) return 470;
+        return 480;
+    }
+
+    private double engineFactor(String engine) {
+        String e = engine == null ? "" : engine.trim();
+        if (e.equals("1.0")) return 1.00;
+        if (e.equals("1.2")) return 1.05;
+        if (e.equals("1.4")) return 1.10;
+        if (e.equals("1.6")) return 1.15;
+        if (e.equals("2.0+")) return 1.25;
+        return 1.00;
+    }
+
+    private double round2(double v) {
+        return Math.round(v * 100.0) / 100.0;
+    }
+
     // Screen 6
     private JPanel quoteScreen() {
         JPanel root = basePanel();
         root.add(topBar("Your Quote", 5), BorderLayout.NORTH);
 
-        JPanel info = new JPanel(new GridLayout(5, 2, 12, 10));
+        JPanel info = new JPanel(new GridLayout(6, 2, 12, 10));
         info.setBackground(Color.WHITE);
 
+        qVehicle = labelLeft("", 12);
+        qPolicy = labelLeft("", 12);
+        qAge = labelLeft("", 12);
+        qNcb = labelLeft("", 12);
+        qPrice = labelLeft("", 12);
+        qStatus = labelLeft("", 12);
+
         info.add(labelLeft("Vehicle:", 12));
-        info.add(labelLeft("[vehicle]", 12));
+        info.add(qVehicle);
         info.add(labelLeft("Policy Type:", 12));
-        info.add(labelLeft("[policy]", 12));
+        info.add(qPolicy);
         info.add(labelLeft("Driver Age:", 12));
-        info.add(labelLeft("[age]", 12));
+        info.add(qAge);
         info.add(labelLeft("No Claim Bonus:", 12));
-        info.add(labelLeft("[ncb]", 12));
+        info.add(qNcb);
         info.add(labelLeft("Quote Price:", 12));
-        info.add(labelLeft("[price]", 12));
+        info.add(qPrice);
+        info.add(labelLeft("Status:", 12));
+        info.add(qStatus);
 
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBackground(Color.WHITE);
@@ -512,5 +663,15 @@ public class Main {
         root.add(info, BorderLayout.CENTER);
         root.add(bottom, BorderLayout.SOUTH);
         return root;
+    }
+
+    private void updateQuoteLabels() {
+        if (currentQuote == null) return;
+        qVehicle.setText(currentQuote.getVehicleText());
+        qPolicy.setText(currentQuote.getPolicyType());
+        qAge.setText(String.valueOf(currentQuote.getDriverAge()));
+        qNcb.setText(String.valueOf(currentQuote.getNcbYears()));
+        qPrice.setText("£" + currentQuote.getPremium());
+        qStatus.setText(String.valueOf(currentQuote.getStatus()));
     }
 }
