@@ -1,0 +1,51 @@
+﻿Make,Model,Fuel Type,Engine Size (L),Year,Transmission
+Dacia,Sandero,Petrol,1,2022,Manual
+Kia,Picanto,Petrol,1,2021,Manual
+Toyota,Aygo,Petrol,1,2020,Manual
+Hyundai,i10,Petrol,1,2022,Manual
+Fiat,Panda,Petrol,1,2021,Manual
+Volkswagen,Up,Petrol,1,2020,Manual
+Renault,Twingo,Petrol,1,2019,Manual
+Peugeot,108,Petrol,1,2019,Manual
+Citroen,C1,Petrol,1,2019,Manual
+Skoda,Citigo,Petrol,1,2019,Manual
+Ford,Fiesta,Petrol,1,2021,Manual
+Vauxhall,Corsa,Petrol,1.2,2022,Manual
+Peugeot,208,Petrol,1.2,2022,Manual
+Renault,Clio,Petrol,1.3,2021,Manual
+Toyota,Yaris,Petrol,1.5,2022,Automatic
+Mazda,2,Petrol,1.5,2021,Automatic
+Seat,Ibiza,Petrol,1,2022,Manual
+Skoda,Fabia,Petrol,1,2023,Manual
+Honda,Jazz,Petrol,1.5,2022,Automatic
+Hyundai,i20,Petrol,1,2022,Manual
+Volkswagen,Polo,Petrol,1,2023,Manual
+Toyota,Corolla,Petrol,1.8,2022,Automatic
+Skoda,Scala,Petrol,1.5,2022,Manual
+Kia,Ceed,Petrol,1.5,2022,Manual
+Hyundai,i30,Petrol,1.5,2022,Automatic
+Ford,Focus,Petrol,1.5,2023,Manual
+Volkswagen,Golf,Petrol,1.5,2023,Automatic
+Skoda,Octavia,Diesel,2,2023,Automatic
+Seat,Leon,Petrol,1.5,2023,Automatic
+Peugeot,308,Diesel,1.5,2022,Automatic
+Nissan,Qashqai,Petrol,1.3,2023,Automatic
+Toyota,C-HR,Hybrid,1.8,2022,Automatic
+Kia,Sportage,Petrol,1.6,2023,Automatic
+Hyundai,Tucson,Petrol,1.6,2023,Automatic
+Ford,Kuga,Petrol,2,2022,Automatic
+Volkswagen,Tiguan,Diesel,2,2023,Automatic
+Skoda,Kodiaq,Diesel,2,2023,Automatic
+Mazda,CX-5,Petrol,2,2022,Automatic
+Honda,CR-V,Petrol,2,2023,Automatic
+Toyota,RAV4,Hybrid,2.5,2023,Automatic
+Tesla,Model 3,Electric,0,2023,Automatic
+Nissan,Leaf,Electric,0,2022,Automatic
+Hyundai,Kona Electric,Electric,0,2023,Automatic
+Kia,Niro EV,Electric,0,2023,Automatic
+Volkswagen,ID.3,Electric,0,2023,Automatic
+BMW,1 Series,Petrol,2,2023,Automatic
+Mercedes,A Class,Petrol,2,2023,Automatic
+Audi,A3,Petrol,2,2023,Automatic
+BMW,3 Series,Petrol,2,2023,Automatic
+Audi,A4,Diesel,2,2023,Automatic
