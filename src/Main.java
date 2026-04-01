@@ -1,10 +1,12 @@
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 public class Main {
 
-    private static final String[] CARDS = {"LOGIN", "VEHICLE", "FACTORS", "POLICY", "PERSONAL", "QUOTE"};
+    private static final String[] CARDS = {"LOGIN", "VEHICLE", "FACTORS", "POLICY", "PERSONAL", "QUOTE", "ADMIN"};
 
     private static final int FRAME_W = 980;
     private static final int FRAME_H = 620;
@@ -33,10 +35,15 @@ public class Main {
 
     private final Repository repo = new Repository();
     private final QuoteCalculator calculator = new QuoteCalculator();
+    private final CustomerDAO customerDAO = new CustomerDAO();
+    private final QuoteDAO quoteDAO = new QuoteDAO();
 
     private JComboBox<String> makeCb, modelCb, yearCb, engineCb, colourCb;
     private JComboBox<String> ageCb, ncbCb;
     private JToggleButton policyThirdParty, policyTpft, policyComprehensive;
+
+    private JTextField loginEmailTf;
+    private JPasswordField loginPasswordPf;
 
     private JTextField nameTf, surnameTf, addressTf, phoneTf, emailTf;
     private JPasswordField passwordPf;
@@ -52,6 +59,7 @@ public class Main {
 
     private void start() {
         repo.loadCars();
+        DB.init();
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -70,7 +78,7 @@ public class Main {
         cards.add(policyScreen(), CARDS[3]);
         cards.add(personalScreen(), CARDS[4]);
         cards.add(quoteScreen(), CARDS[5]);
-
+        cards.add(adminScreen(), CARDS[6]);
         frame.setContentPane(cards);
         showCard(CARDS[0]);
         frame.setVisible(true);
@@ -292,15 +300,15 @@ public class Main {
         JLabel loginHint = mutedLabel("Login to view saved quotes", 13);
         loginHint.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JTextField username = textField();
-        JPasswordField password = passField();
+        loginEmailTf = textField();
+        loginPasswordPf = passField();
 
-        username.setMaximumSize(new Dimension(320, FIELD_H));
-        password.setMaximumSize(new Dimension(320, FIELD_H));
+        loginEmailTf.setMaximumSize(new Dimension(320, FIELD_H));
+        loginPasswordPf.setMaximumSize(new Dimension(320, FIELD_H));
 
         JButton login = button("Login", 130, 38);
         login.setAlignmentX(Component.CENTER_ALIGNMENT);
-        onClick(login, () -> showCard(CARDS[1]));
+        onClick(login, this::handleLogin);
 
         center.add(Box.createVerticalStrut(22));
         center.add(newQuote);
@@ -311,9 +319,9 @@ public class Main {
         center.add(Box.createVerticalStrut(28));
         center.add(loginHint);
         center.add(Box.createVerticalStrut(12));
-        center.add(username);
+        center.add(loginEmailTf);
         center.add(Box.createVerticalStrut(12));
-        center.add(password);
+        center.add(loginPasswordPf);
         center.add(Box.createVerticalStrut(16));
         center.add(login);
         center.add(Box.createVerticalGlue());
@@ -758,7 +766,21 @@ public class Main {
         String email = safe(emailTf.getText());
         String password = new String(passwordPf.getPassword());
 
-        currentCustomer = repo.createCustomer(name, surname, address, phone, email, password);
+        try {
+            currentCustomer = customerDAO.register(name, surname, address, phone, email, password);
+        } catch (Exception ex) {
+            if ("Email already registered".equalsIgnoreCase(ex.getMessage())) {
+                try {
+                    currentCustomer = customerDAO.login(email, password);
+                } catch (Exception ex2) {
+                    JOptionPane.showMessageDialog(frame, ex2.getMessage(), "Login failed", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Registration failed", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
 
         String make = safe(makeCb.getSelectedItem());
         String model = safe(modelCb.getSelectedItem());
@@ -777,12 +799,33 @@ public class Main {
         premium = premium * engineFactor(engine);
         premium = round2(premium);
 
-        currentQuote = repo.createQuote(currentCustomer, vehicleText, age, ncb, policy, premium);
+        try {
+            int quoteId = quoteDAO.createQuote(currentCustomer.getId(), vehicleText, age, ncb, policy, premium);
+            currentQuote = new Quote(quoteId, currentCustomer, vehicleText, age, ncb, policy, premium);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, ex.getMessage(), "Quote save failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         updateQuoteLabels();
         showCard(CARDS[5]);
     }
+    private void handleLogin() {
+        String email = safe(loginEmailTf.getText());
+        String pass = new String(loginPasswordPf.getPassword());
 
+        if (email.equalsIgnoreCase("admin@email.com") && pass.equals("admin123")) {
+            showCard(CARDS[6]);
+            return;
+        }
+
+        try {
+            currentCustomer = customerDAO.login(email, pass);
+            showCard(CARDS[1]);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, ex.getMessage(), "Login failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }
     private String safe(Object v) {
         return v == null ? "" : String.valueOf(v).trim();
     }
@@ -895,10 +938,20 @@ public class Main {
         onClick(back, () -> showCard(CARDS[4]));
 
         JButton save = secondaryButton("Save");
+        save.addActionListener(e ->
+                JOptionPane.showMessageDialog(frame, "Quote saved.", "Saved", JOptionPane.INFORMATION_MESSAGE)
+        );
         JButton confirm = button("Confirm");
+        confirm.addActionListener(e ->
+                JOptionPane.showMessageDialog(frame, "Quote submitted for admin review.", "Submitted", JOptionPane.INFORMATION_MESSAGE)
+        );
+        JButton logout = secondaryButton("Logout");
+        logout.addActionListener(e -> logoutCustomer());
+
 
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         right.setBackground(CARD_BG);
+        right.add(logout);
         right.add(save);
         right.add(confirm);
 
@@ -920,5 +973,115 @@ public class Main {
         qNcb.setText(String.valueOf(currentQuote.getNcbYears()));
         qPrice.setText("£" + currentQuote.getPremium());
         qStatus.setText(String.valueOf(currentQuote.getStatus()));
+    }
+    // Screen 7
+    private JPanel adminScreen() {
+        JPanel root = basePanel();
+        JPanel card = cardPanel();
+
+        card.add(topBar("Admin Panel", 5), BorderLayout.NORTH);
+
+        String[] cols = {"Quote ID", "Customer Email", "Vehicle", "Policy", "Premium", "Status", "Created"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int row, int col) { return false; }
+        };
+
+        JTable table = new JTable(model);
+        table.setRowHeight(28);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(new LineBorder(BORDER, 1, true));
+
+        JButton refresh = secondaryButton("Refresh");
+        JButton approve = button("Approve");
+        JButton reject = secondaryButton("Reject");
+        JButton logout = secondaryButton("Logout");
+
+        Runnable load = () -> {
+            try {
+                model.setRowCount(0);
+                List<QuoteDAO.AdminQuoteRow> rows = quoteDAO.getAllQuotesForAdmin();
+                for (QuoteDAO.AdminQuoteRow r : rows) {
+                    model.addRow(new Object[]{
+                            r.id,
+                            r.customerEmail,
+                            r.vehicleText,
+                            r.policyType,
+                            "£" + round2(r.premium),
+                            r.status,
+                            r.createdAt
+                    });
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Admin error", JOptionPane.ERROR_MESSAGE);
+            }
+        };
+
+        refresh.addActionListener(e -> load.run());
+
+        approve.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) return;
+            int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
+            try {
+                quoteDAO.approve(quoteId);
+                load.run();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Admin error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        reject.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) return;
+            int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
+            try {
+                quoteDAO.reject(quoteId);
+                load.run();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Admin error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        logout.addActionListener(e -> showCard(CARDS[0]));
+
+        JPanel center = new JPanel(new BorderLayout(0, 12));
+        center.setBackground(CARD_BG);
+
+        JLabel hint = new JLabel("Select a quote and use Approve/Reject to update its status.");
+        hint.setForeground(MUTED);
+        hint.setFont(new Font("SansSerif", Font.PLAIN, 13));
+
+        center.add(hint, BorderLayout.NORTH);
+        center.add(scroll, BorderLayout.CENTER);
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bottom.setBackground(CARD_BG);
+        bottom.add(refresh);
+        bottom.add(approve);
+        bottom.add(reject);
+        bottom.add(logout);
+
+        card.add(center, BorderLayout.CENTER);
+        card.add(bottom, BorderLayout.SOUTH);
+
+        root.add(card);
+
+        load.run();
+        return root;
+    }
+    private void logoutCustomer() {
+        int choice = JOptionPane.showConfirmDialog(frame, "Logout now?", "Confirm logout", JOptionPane.YES_NO_OPTION);
+        if (choice != JOptionPane.YES_OPTION) return;
+
+        currentCustomer = null;
+        currentQuote = null;
+
+        if (loginEmailTf != null) loginEmailTf.setText("");
+        if (loginPasswordPf != null) loginPasswordPf.setText("");
+
+        showCard(CARDS[0]);
     }
 }
