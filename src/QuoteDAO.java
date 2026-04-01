@@ -99,4 +99,49 @@ public class QuoteDAO {
             this.createdAt = createdAt;
         }
     }
+
+    public java.util.List<CustomerQuoteRow> getQuotesForCustomer(int customerId) throws Exception {
+        java.util.List<CustomerQuoteRow> rows = new java.util.ArrayList<>();
+
+        try (java.sql.Connection c = DB.getConnection();
+             java.sql.PreparedStatement ps = c.prepareStatement(
+                     "SELECT id, vehicle_text, policy_type, premium, status, created_at " +
+                             "FROM quotes WHERE customer_id=? ORDER BY id DESC"
+             )) {
+
+            ps.setInt(1, customerId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new CustomerQuoteRow(
+                            rs.getInt("id"),
+                            rs.getString("vehicle_text"),
+                            rs.getString("policy_type"),
+                            rs.getDouble("premium"),
+                            rs.getString("status"),
+                            rs.getString("created_at")
+                    ));
+                }
+            }
+        }
+
+        return rows;
+    }
+
+    public static class CustomerQuoteRow {
+        public final int id;
+        public final String vehicleText;
+        public final String policyType;
+        public final double premium;
+        public final String status;
+        public final String createdAt;
+
+        public CustomerQuoteRow(int id, String vehicleText, String policyType, double premium, String status, String createdAt) {
+            this.id = id;
+            this.vehicleText = vehicleText;
+            this.policyType = policyType;
+            this.premium = premium;
+            this.status = status;
+            this.createdAt = createdAt;
+        }
+    }
 }

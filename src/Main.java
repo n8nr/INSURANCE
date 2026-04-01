@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Main {
 
-    private static final String[] CARDS = {"LOGIN", "VEHICLE", "FACTORS", "POLICY", "PERSONAL", "QUOTE", "ADMIN"};
+    private static final String[] CARDS = {"LOGIN", "VEHICLE", "FACTORS", "POLICY", "PERSONAL", "QUOTE", "ADMIN", "MY_QUOTES"};
 
     private static final int FRAME_W = 980;
     private static final int FRAME_H = 620;
@@ -53,6 +53,8 @@ public class Main {
     private Customer currentCustomer;
     private Quote currentQuote;
 
+    private boolean quoteOpenedFromMyQuotes = false;
+
     public static void main(String[] ignored) {
         SwingUtilities.invokeLater(() -> new Main().start());
     }
@@ -79,6 +81,7 @@ public class Main {
         cards.add(personalScreen(), CARDS[4]);
         cards.add(quoteScreen(), CARDS[5]);
         cards.add(adminScreen(), CARDS[6]);
+        cards.add(myQuotesScreen(), CARDS[7]);
         frame.setContentPane(cards);
         showCard(CARDS[0]);
         frame.setVisible(true);
@@ -806,7 +809,7 @@ public class Main {
             JOptionPane.showMessageDialog(frame, ex.getMessage(), "Quote save failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
+        quoteOpenedFromMyQuotes = true;
         updateQuoteLabels();
         showCard(CARDS[5]);
     }
@@ -821,7 +824,7 @@ public class Main {
 
         try {
             currentCustomer = customerDAO.login(email, pass);
-            showCard(CARDS[1]);
+            showCard(CARDS[7]);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(frame, ex.getMessage(), "Login failed", JOptionPane.ERROR_MESSAGE);
         }
@@ -935,7 +938,14 @@ public class Main {
         bottom.setBackground(CARD_BG);
 
         JButton back = secondaryButton("Back");
-        onClick(back, () -> showCard(CARDS[4]));
+        onClick(back, () -> {
+            if (quoteOpenedFromMyQuotes) {
+                quoteOpenedFromMyQuotes = false;
+                showCard(CARDS[7]); // MY_QUOTES
+            } else {
+                showCard(CARDS[4]); // PERSONAL
+            }
+        });
 
         JButton save = secondaryButton("Save");
         save.addActionListener(e ->
@@ -1083,5 +1093,104 @@ public class Main {
         if (loginPasswordPf != null) loginPasswordPf.setText("");
 
         showCard(CARDS[0]);
+    }
+    // Screen 8
+    private JPanel myQuotesScreen() {
+        JPanel root = basePanel();
+        JPanel card = cardPanel();
+
+        card.add(topBar("My Quotes", 5), BorderLayout.NORTH);
+
+        String[] cols = {"Quote ID", "Vehicle", "Policy", "Premium", "Status", "Created"};
+        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int row, int col) { return false; }
+        };
+
+        JTable table = new JTable(model);
+        table.setRowHeight(28);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(new LineBorder(BORDER, 1, true));
+
+        JButton refresh = secondaryButton("Refresh");
+        JButton view = button("View");
+        JButton newQuoteBtn = secondaryButton("New Quote");
+        JButton logout = secondaryButton("Logout");
+
+        Runnable load = () -> {
+            try {
+                model.setRowCount(0);
+                if (currentCustomer == null) return;
+
+                java.util.List<QuoteDAO.CustomerQuoteRow> rows = quoteDAO.getQuotesForCustomer(currentCustomer.getId());
+                for (QuoteDAO.CustomerQuoteRow r : rows) {
+                    model.addRow(new Object[]{
+                            r.id,
+                            r.vehicleText,
+                            r.policyType,
+                            "£" + round2(r.premium),
+                            r.status,
+                            r.createdAt
+                    });
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        };
+
+        refresh.addActionListener(e -> load.run());
+
+        newQuoteBtn.addActionListener(e -> {
+            currentQuote = null;
+            showCard(CARDS[1]);
+        });
+
+        logout.addActionListener(e -> logoutCustomer());
+
+        view.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) return;
+
+            int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
+            String vehicle = String.valueOf(model.getValueAt(row, 1));
+            String policy = String.valueOf(model.getValueAt(row, 2));
+            String premiumText = String.valueOf(model.getValueAt(row, 3)).replace("£", "");
+            double premium = Double.parseDouble(premiumText);
+            String status = String.valueOf(model.getValueAt(row, 4));
+
+            currentQuote = new Quote(quoteId, currentCustomer, vehicle, 0, 0, policy, premium);
+            currentQuote.setStatus(Quote.Status.valueOf(status));
+
+            quoteOpenedFromMyQuotes = true;
+            updateQuoteLabels();
+            showCard(CARDS[5]);
+        });
+
+        JPanel center = new JPanel(new BorderLayout(0, 12));
+        center.setBackground(CARD_BG);
+
+        JLabel hint = new JLabel("Select a quote and click View, or start a new quote.");
+        hint.setForeground(MUTED);
+        hint.setFont(new Font("SansSerif", Font.PLAIN, 13));
+
+        center.add(hint, BorderLayout.NORTH);
+        center.add(scroll, BorderLayout.CENTER);
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bottom.setBackground(CARD_BG);
+        bottom.add(refresh);
+        bottom.add(newQuoteBtn);
+        bottom.add(view);
+        bottom.add(logout);
+
+        card.add(center, BorderLayout.CENTER);
+        card.add(bottom, BorderLayout.SOUTH);
+
+        root.add(card);
+
+        load.run();
+        return root;
     }
 }
