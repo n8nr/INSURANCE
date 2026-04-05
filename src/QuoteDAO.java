@@ -100,6 +100,40 @@ public class QuoteDAO {
         }
     }
 
+    public static class QuoteDetailsRow {
+        public final int id;
+        public final String customerName;
+        public final String customerSurname;
+        public final String customerEmail;
+        public final String customerPhone;
+        public final String customerAddress;
+        public final String vehicleText;
+        public final int driverAge;
+        public final int ncbYears;
+        public final String policyType;
+        public final double premium;
+        public final String status;
+        public final String createdAt;
+
+        public QuoteDetailsRow(int id, String customerName, String customerSurname, String customerEmail,
+                               String customerPhone, String customerAddress, String vehicleText,
+                               int driverAge, int ncbYears, String policyType, double premium,
+                               String status, String createdAt) {
+            this.id = id;
+            this.customerName = customerName;
+            this.customerSurname = customerSurname;
+            this.customerEmail = customerEmail;
+            this.customerPhone = customerPhone;
+            this.customerAddress = customerAddress;
+            this.vehicleText = vehicleText;
+            this.driverAge = driverAge;
+            this.ncbYears = ncbYears;
+            this.policyType = policyType;
+            this.premium = premium;
+            this.status = status;
+            this.createdAt = createdAt;
+        }
+    }
     public java.util.List<CustomerQuoteRow> getQuotesForCustomer(int customerId) throws Exception {
         java.util.List<CustomerQuoteRow> rows = new java.util.ArrayList<>();
 
@@ -143,5 +177,41 @@ public class QuoteDAO {
             this.status = status;
             this.createdAt = createdAt;
         }
+    }
+
+    public QuoteDetailsRow findQuoteDetailsById(int quoteId) throws Exception {
+        try (Connection c = DB.getConnection();
+             PreparedStatement ps = c.prepareStatement(
+                     "SELECT q.id, q.vehicle_text, q.driver_age, q.ncb_years, q.policy_type, q.premium, q.status, q.created_at, " +
+                             "c.name, c.surname, c.email, c.phone, c.address " +
+                             "FROM quotes q " +
+                             "JOIN customers c ON q.customer_id = c.id " +
+                             "WHERE q.id = ?"
+             )) {
+
+            ps.setInt(1, quoteId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new QuoteDetailsRow(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("surname"),
+                            rs.getString("email"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("vehicle_text"),
+                            rs.getInt("driver_age"),
+                            rs.getInt("ncb_years"),
+                            rs.getString("policy_type"),
+                            rs.getDouble("premium"),
+                            rs.getString("status"),
+                            rs.getString("created_at")
+                    );
+                }
+            }
+        }
+
+        return null;
     }
 }

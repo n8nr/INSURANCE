@@ -813,6 +813,7 @@ public class Main {
         updateQuoteLabels();
         showCard(CARDS[5]);
     }
+
     private void handleLogin() {
         String email = safe(loginEmailTf.getText());
         String pass = new String(loginPasswordPf.getPassword());
@@ -829,6 +830,7 @@ public class Main {
             JOptionPane.showMessageDialog(frame, ex.getMessage(), "Login failed", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     private String safe(Object v) {
         return v == null ? "" : String.valueOf(v).trim();
     }
@@ -946,15 +948,23 @@ public class Main {
                 showCard(CARDS[4]); // PERSONAL
             }
         });
-
         JButton save = secondaryButton("Save");
         save.addActionListener(e ->
                 JOptionPane.showMessageDialog(frame, "Quote saved.", "Saved", JOptionPane.INFORMATION_MESSAGE)
         );
+
         JButton confirm = button("Confirm");
-        confirm.addActionListener(e ->
-                JOptionPane.showMessageDialog(frame, "Quote submitted for admin review.", "Submitted", JOptionPane.INFORMATION_MESSAGE)
-        );
+        confirm.addActionListener(e -> {
+            JOptionPane.showMessageDialog(frame,
+                    "Quote submitted successfully.\nAwaiting admin review.",
+                    "Submitted",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            clearAllFields();
+            showCard(CARDS[0]);
+        });
+
         JButton logout = secondaryButton("Logout");
         logout.addActionListener(e -> logoutCustomer());
 
@@ -975,31 +985,35 @@ public class Main {
         return root;
     }
 
-    private void updateQuoteLabels() {
-        if (currentQuote == null) return;
-        qVehicle.setText(currentQuote.getVehicleText());
-        qPolicy.setText(currentQuote.getPolicyType());
-        qAge.setText(String.valueOf(currentQuote.getDriverAge()));
-        qNcb.setText(String.valueOf(currentQuote.getNcbYears()));
-        qPrice.setText("£" + currentQuote.getPremium());
-        qStatus.setText(String.valueOf(currentQuote.getStatus()));
-    }
     // Screen 7
     private JPanel adminScreen() {
         JPanel root = basePanel();
         JPanel card = cardPanel();
+        JButton viewDetails = secondaryButton("View Details");
 
         card.add(topBar("Admin Panel", 5), BorderLayout.NORTH);
 
         String[] cols = {"Quote ID", "Customer Email", "Vehicle", "Policy", "Premium", "Status", "Created"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
 
         JTable table = new JTable(model);
         table.setRowHeight(28);
         table.setFont(new Font("SansSerif", Font.PLAIN, 12));
         table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int row = table.getSelectedRow();
+                    int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
+                    showQuoteDetailsDialog(quoteId);
+                }
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(new LineBorder(BORDER, 1, true));
@@ -1033,7 +1047,11 @@ public class Main {
 
         approve.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) return;
+            if (row < 0) {
+                JOptionPane.showMessageDialog(frame, "Please select a quote first.");
+                return;
+            }
+
             int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
             try {
                 quoteDAO.approve(quoteId);
@@ -1045,7 +1063,11 @@ public class Main {
 
         reject.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) return;
+            if (row < 0) {
+                JOptionPane.showMessageDialog(frame, "Please select a quote first.");
+                return;
+            }
+
             int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
             try {
                 quoteDAO.reject(quoteId);
@@ -1055,12 +1077,37 @@ public class Main {
             }
         });
 
+        viewDetails.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(frame, "Please select a quote first.");
+                return;
+            }
+
+            int quoteId = Integer.parseInt(String.valueOf(table.getValueAt(selectedRow, 0)));
+            showQuoteDetailsDialog(quoteId);
+        });
+
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        int quoteId = Integer.parseInt(String.valueOf(table.getValueAt(selectedRow, 0)));
+                        showQuoteDetailsDialog(quoteId);
+                    }
+                }
+            }
+        });
+
         logout.addActionListener(e -> showCard(CARDS[0]));
 
         JPanel center = new JPanel(new BorderLayout(0, 12));
         center.setBackground(CARD_BG);
 
-        JLabel hint = new JLabel("Select a quote and use Approve/Reject to update its status.");
+        JLabel hint = new JLabel("Select a quote and use View Details, Approve or Reject to update its status.");
         hint.setForeground(MUTED);
         hint.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
@@ -1070,6 +1117,7 @@ public class Main {
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottom.setBackground(CARD_BG);
         bottom.add(refresh);
+        bottom.add(viewDetails);
         bottom.add(approve);
         bottom.add(reject);
         bottom.add(logout);
@@ -1082,6 +1130,7 @@ public class Main {
         load.run();
         return root;
     }
+
     private void logoutCustomer() {
         int choice = JOptionPane.showConfirmDialog(frame, "Logout now?", "Confirm logout", JOptionPane.YES_NO_OPTION);
         if (choice != JOptionPane.YES_OPTION) return;
@@ -1094,6 +1143,7 @@ public class Main {
 
         showCard(CARDS[0]);
     }
+
     // Screen 8
     private JPanel myQuotesScreen() {
         JPanel root = basePanel();
@@ -1103,7 +1153,9 @@ public class Main {
 
         String[] cols = {"Quote ID", "Vehicle", "Policy", "Premium", "Status", "Created"};
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
 
         JTable table = new JTable(model);
@@ -1193,4 +1245,113 @@ public class Main {
         load.run();
         return root;
     }
+
+    private void updateQuoteLabels() {
+        if (currentQuote == null) return;
+        qVehicle.setText(currentQuote.getVehicleText());
+        qPolicy.setText(currentQuote.getPolicyType());
+        qAge.setText(String.valueOf(currentQuote.getDriverAge()));
+        qNcb.setText(String.valueOf(currentQuote.getNcbYears()));
+        qPrice.setText("£" + currentQuote.getPremium());
+        qStatus.setText(String.valueOf(currentQuote.getStatus()));
+    }
+
+    // 👇 PASTE HERE
+    private void clearAllFields() {
+        if (makeCb != null) makeCb.setSelectedIndex(0);
+
+        if (modelCb != null) {
+            modelCb.removeAllItems();
+            modelCb.addItem("");
+        }
+
+        if (yearCb != null) yearCb.setSelectedIndex(0);
+        if (engineCb != null) engineCb.setSelectedIndex(0);
+        if (colourCb != null) colourCb.setSelectedIndex(0);
+
+        if (ageCb != null) ageCb.setSelectedIndex(0);
+        if (ncbCb != null) ncbCb.setSelectedIndex(0);
+
+        if (nameTf != null) nameTf.setText("");
+        if (surnameTf != null) surnameTf.setText("");
+        if (addressTf != null) addressTf.setText("");
+        if (phoneTf != null) phoneTf.setText("");
+        if (emailTf != null) emailTf.setText("");
+        if (passwordPf != null) passwordPf.setText("");
+    }
+
+    private void showQuoteDetailsDialog(int quoteId) {
+        try {
+            QuoteDAO.QuoteDetailsRow q = quoteDAO.findQuoteDetailsById(quoteId);
+
+            if (q == null) {
+                JOptionPane.showMessageDialog(frame, "Quote not found.");
+                return;
+            }
+
+            JDialog dialog = new JDialog(frame, "Quote Details", true);
+            dialog.setSize(520, 420);
+            dialog.setLocationRelativeTo(frame);
+
+            JPanel panel = new JPanel(new BorderLayout(12, 12));
+            panel.setBorder(new EmptyBorder(16, 16, 16, 16));
+            panel.setBackground(Color.WHITE);
+
+            JPanel details = new JPanel(new GridLayout(0, 2, 10, 10));
+            details.setBackground(Color.WHITE);
+
+            details.add(new JLabel("Quote ID:"));
+            details.add(new JLabel(String.valueOf(q.id)));
+
+            details.add(new JLabel("Customer:"));
+            details.add(new JLabel(q.customerName + " " + q.customerSurname));
+
+            details.add(new JLabel("Email:"));
+            details.add(new JLabel(q.customerEmail));
+
+            details.add(new JLabel("Phone:"));
+            details.add(new JLabel(q.customerPhone));
+
+            details.add(new JLabel("Address:"));
+            details.add(new JLabel(q.customerAddress));
+
+            details.add(new JLabel("Vehicle:"));
+            details.add(new JLabel(q.vehicleText));
+
+            details.add(new JLabel("Driver Age:"));
+            details.add(new JLabel(String.valueOf(q.driverAge)));
+
+            details.add(new JLabel("No Claim Bonus:"));
+            details.add(new JLabel(String.valueOf(q.ncbYears)));
+
+            details.add(new JLabel("Policy Type:"));
+            details.add(new JLabel(q.policyType));
+
+            details.add(new JLabel("Premium:"));
+            details.add(new JLabel("£" + round2(q.premium)));
+
+            details.add(new JLabel("Status:"));
+            details.add(new JLabel(q.status));
+
+            details.add(new JLabel("Created:"));
+            details.add(new JLabel(q.createdAt));
+
+            JButton close = new JButton("Close");
+            close.addActionListener(e -> dialog.dispose());
+
+            JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            bottom.setBackground(Color.WHITE);
+            bottom.add(close);
+
+            panel.add(details, BorderLayout.CENTER);
+            panel.add(bottom, BorderLayout.SOUTH);
+
+            dialog.setContentPane(panel);
+            dialog.setVisible(true);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 }
