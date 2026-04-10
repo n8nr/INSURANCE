@@ -9,7 +9,7 @@ public class Main {
     private static final String[] CARDS = {"LOGIN", "VEHICLE", "FACTORS", "POLICY", "PERSONAL", "QUOTE", "ADMIN", "MY_QUOTES"};
 
     private static final int FRAME_W = 980;
-    private static final int FRAME_H = 620;
+    private static final int FRAME_H = 720;
 
     private static final int FIELD_W = 280;
     private static final int FIELD_H = 34;
@@ -20,17 +20,20 @@ public class Main {
     private static final int BTN_W = 130;
     private static final int BTN_H = 40;
 
-    private static final Color BG = new Color(245, 247, 250);
-    private static final Color CARD_BG = Color.WHITE;
-    private static final Color TEXT = new Color(35, 35, 35);
-    private static final Color MUTED = new Color(110, 110, 110);
-    private static final Color PRIMARY = new Color(32, 43, 67);
-    private static final Color PRIMARY_HOVER = new Color(46, 61, 92);
-    private static final Color BORDER = new Color(225, 229, 236);
-    private static final Color INPUT_BG = new Color(250, 251, 253);
-    private static final Color SELECTED_CARD = new Color(233, 240, 255);
+    private static final Color BG = new Color(10, 15, 26);
+    private static final Color CARD_BG = new Color(17, 24, 39);
+    private static final Color PANEL_BG = new Color(30, 41, 59);
+    private static final Color TEXT = new Color(241, 245, 249);
+    private static final Color MUTED = new Color(148, 163, 184);
+    private static final Color PRIMARY = new Color(37, 99, 235);
+    private static final Color PRIMARY_HOVER = new Color(29, 78, 216);
+    private static final Color BORDER = new Color(71, 85, 105);
+    private static final Color INPUT_BG = new Color(15, 23, 42);
+    private static final Color SELECTED_CARD = new Color(30, 58, 138);
+    private static final Color DIALOG_BG = new Color(20, 28, 45);
+    private static final Color TABLE_HEADER_BG = new Color(37, 99, 235);
 
-    private final JFrame frame = new JFrame("Insurance Quote App");
+    private final JFrame frame = new JFrame("F&N Car Insurance");
     private final JPanel cards = new JPanel(new CardLayout());
 
     private final Repository repo = new Repository();
@@ -45,7 +48,7 @@ public class Main {
     private JTextField loginEmailTf;
     private JPasswordField loginPasswordPf;
 
-    private JTextField nameTf, surnameTf, addressTf, phoneTf, emailTf;
+    private JTextField fullNameTf, addressTf, phoneTf, emailTf;
     private JPasswordField passwordPf;
 
     private JLabel qVehicle, qPolicy, qAge, qNcb, qPrice, qStatus;
@@ -70,6 +73,7 @@ public class Main {
 
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(FRAME_W, FRAME_H);
+        frame.setMinimumSize(new Dimension(FRAME_W, FRAME_H));
         frame.setLocationRelativeTo(null);
 
         cards.setBackground(BG);
@@ -82,6 +86,7 @@ public class Main {
         cards.add(quoteScreen(), CARDS[5]);
         cards.add(adminScreen(), CARDS[6]);
         cards.add(myQuotesScreen(), CARDS[7]);
+
         frame.setContentPane(cards);
         showCard(CARDS[0]);
         frame.setVisible(true);
@@ -103,9 +108,9 @@ public class Main {
         p.setBackground(CARD_BG);
         p.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
-                new EmptyBorder(22, 22, 22, 22)
+                new EmptyBorder(18, 18, 18, 18)
         ));
-        p.setPreferredSize(new Dimension(860, 520));
+        p.setPreferredSize(new Dimension(860, 560));
         return p;
     }
 
@@ -144,7 +149,7 @@ public class Main {
             if (i < 5) sb.append(" ");
         }
         JLabel l = new JLabel(sb.toString(), SwingConstants.RIGHT);
-        l.setForeground(PRIMARY);
+        l.setForeground(new Color(96, 165, 250));
         l.setFont(new Font("SansSerif", Font.BOLD, 18));
         return l;
     }
@@ -155,12 +160,14 @@ public class Main {
         b.setForeground(Color.WHITE);
         b.setBackground(PRIMARY);
         b.setOpaque(true);
-        b.setBorder(new EmptyBorder(10, 18, 10, 18));
         b.setPreferredSize(new Dimension(w, h));
-        b.setFont(new Font("SansSerif", Font.BOLD, 13));
+        b.setMinimumSize(new Dimension(w, h));
+        b.setMaximumSize(new Dimension(w, h));
+        b.setFont(new Font("SansSerif", Font.BOLD, 14));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setContentAreaFilled(true);
-        b.setBorderPainted(false);
+        b.setBorder(BorderFactory.createEmptyBorder());
+        b.setMargin(new Insets(0, 0, 0, 0));
 
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -179,29 +186,31 @@ public class Main {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
         b.setForeground(TEXT);
-        b.setBackground(Color.WHITE);
+        b.setBackground(PANEL_BG);
         b.setOpaque(true);
+        b.setPreferredSize(new Dimension(BTN_W, BTN_H));
+        b.setMinimumSize(new Dimension(BTN_W, BTN_H));
+        b.setMaximumSize(new Dimension(BTN_W, BTN_H));
+        b.setFont(new Font("SansSerif", Font.BOLD, 14));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
-                new EmptyBorder(10, 18, 10, 18)
+                new EmptyBorder(0, 0, 0, 0)
         ));
-        b.setPreferredSize(new Dimension(BTN_W, BTN_H));
-        b.setFont(new Font("SansSerif", Font.BOLD, 13));
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setMargin(new Insets(0, 0, 0, 0));
 
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                b.setBackground(new Color(248, 249, 252));
+                b.setBackground(new Color(51, 65, 85));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                b.setBackground(Color.WHITE);
+                b.setBackground(PANEL_BG);
             }
         });
 
         return b;
     }
-
     private JButton button(String text) {
         return button(text, BTN_W, BTN_H);
     }
@@ -244,89 +253,278 @@ public class Main {
 
     private JComboBox<String> comboBox(int w) {
         JComboBox<String> cb = new JComboBox<>();
-        cb.setBackground(INPUT_BG);
-        cb.setForeground(TEXT);
-        cb.setBorder(new CompoundBorder(
-                new LineBorder(BORDER, 1, true),
-                new EmptyBorder(2, 6, 2, 6)
-        ));
         cb.setFont(new Font("SansSerif", Font.PLAIN, 13));
+
         Dimension d = new Dimension(w, COMBO_H);
         cb.setPreferredSize(d);
+        cb.setMinimumSize(d);
         cb.setMaximumSize(d);
+
+        cb.setBackground(INPUT_BG);
+        cb.setForeground(new Color(30, 30, 30)); // dark text
+        cb.setOpaque(true);
+
+        cb.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(2, 8, 2, 8)
+        ));
+
+        cb.setFocusable(false);
+
+        cb.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus
+            ) {
+                JLabel lbl = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus
+                );
+
+                lbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+                lbl.setOpaque(true);
+
+                String text = (value == null) ? "" : value.toString();
+                lbl.setText(text);
+
+                if (index == -1) {
+                    // selected value shown when combo box is closed
+                    lbl.setBackground(Color.WHITE);
+                    lbl.setForeground(Color.BLACK);
+                } else if (isSelected) {
+                    // highlighted item in dropdown list
+                    lbl.setBackground(PRIMARY);
+                    lbl.setForeground(Color.WHITE);
+                } else {
+                    // normal dropdown items
+                    lbl.setBackground(Color.WHITE);
+                    lbl.setForeground(Color.BLACK);
+                }
+
+                lbl.setBorder(new EmptyBorder(0, 8, 0, 8));
+                return lbl;
+            }
+        });
+
         return cb;
     }
 
     private JPanel topBar(String title, int step) {
         JPanel top = new JPanel(new BorderLayout());
         top.setBackground(CARD_BG);
-        top.add(labelLeftBold(title, 22), BorderLayout.WEST);
+
+        JPanel left = new JPanel();
+        left.setBackground(CARD_BG);
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+
+        JLabel brand = new JLabel("F&N Car Insurance");
+        brand.setForeground(new Color(96, 165, 250));
+        brand.setFont(new Font("SansSerif", Font.BOLD, 13));
+
+        JLabel subtitle = new JLabel(title);
+        subtitle.setForeground(TEXT);
+        subtitle.setFont(new Font("SansSerif", Font.BOLD, 22));
+
+        left.add(brand);
+        left.add(Box.createVerticalStrut(4));
+        left.add(subtitle);
+
+        top.add(left, BorderLayout.WEST);
         top.add(progressLabel(step), BorderLayout.EAST);
         return top;
     }
+
+    private JPanel brandHeader() {
+        JPanel wrap = new JPanel();
+        wrap.setBackground(CARD_BG);
+        wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
+
+        JPanel logoRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 0));
+        logoRow.setBackground(CARD_BG);
+
+        JLabel logoBox = new JLabel("F&N", SwingConstants.CENTER);
+        logoBox.setOpaque(true);
+        logoBox.setBackground(PRIMARY);
+        logoBox.setForeground(Color.WHITE);
+        logoBox.setFont(new Font("SansSerif", Font.BOLD, 20));
+        logoBox.setPreferredSize(new Dimension(64, 64));
+        logoBox.setMinimumSize(new Dimension(64, 64));
+        logoBox.setMaximumSize(new Dimension(64, 64));
+        logoBox.setHorizontalAlignment(SwingConstants.CENTER);
+        logoBox.setBorder(new CompoundBorder(
+                new LineBorder(new Color(96, 165, 250), 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        ));
+
+        JPanel textWrap = new JPanel();
+        textWrap.setBackground(CARD_BG);
+        textWrap.setLayout(new BoxLayout(textWrap, BoxLayout.Y_AXIS));
+
+        JLabel title = new JLabel("F&N Car Insurance");
+        title.setForeground(TEXT);
+        title.setFont(new Font("SansSerif", Font.BOLD, 28));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel subtitle = new JLabel("Car insurance made simple");
+        subtitle.setForeground(MUTED);
+        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        textWrap.add(title);
+        textWrap.add(Box.createVerticalStrut(4));
+        textWrap.add(subtitle);
+
+        logoRow.add(logoBox);
+        logoRow.add(textWrap);
+
+        wrap.add(Box.createVerticalStrut(10));
+        wrap.add(logoRow);
+
+        return wrap;
+    }
+
+
+    private void styleTable(JTable table, JScrollPane scroll) {
+        table.setBackground(PANEL_BG);
+        table.setForeground(TEXT);
+        table.setGridColor(BORDER);
+        table.setRowHeight(30);
+        table.setSelectionBackground(new Color(37, 99, 235));
+        table.setSelectionForeground(Color.WHITE);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setShowVerticalLines(true);
+        table.setShowHorizontalLines(true);
+
+        table.getTableHeader().setBackground(TABLE_HEADER_BG);
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        table.getTableHeader().setBorder(new LineBorder(BORDER, 1, true));
+
+        scroll.getViewport().setBackground(PANEL_BG);
+        scroll.setBackground(PANEL_BG);
+        scroll.setBorder(new LineBorder(BORDER, 1, true));
+    }
+
 
     // Screen 1
     private JPanel loginScreen() {
         JPanel root = basePanel();
         JPanel card = cardPanel();
 
-        JLabel title = labelCenter("Insurance Quote App", 28);
-        title.setFont(new Font("SansSerif", Font.BOLD, 28));
-
-        JLabel subtitle = mutedLabel("Create a new quote or resume an existing one", 14);
-
         JPanel top = new JPanel();
         top.setBackground(CARD_BG);
         top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        top.add(Box.createVerticalStrut(10));
-        top.add(title);
-        top.add(Box.createVerticalStrut(8));
-        top.add(subtitle);
+        top.add(brandHeader());
 
         JPanel center = new JPanel();
         center.setBackground(CARD_BG);
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
 
+        JPanel hero = new JPanel();
+        hero.setBackground(PANEL_BG);
+        hero.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(18, 18, 18, 18)
+        ));
+        hero.setLayout(new BoxLayout(hero, BoxLayout.Y_AXIS));
+        hero.setMaximumSize(new Dimension(760, 95));
+        hero.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel heroTitle = labelCenter("Get a quote in minutes", 20);
+        heroTitle.setFont(new Font("SansSerif", Font.BOLD, 20));
+        heroTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel heroText = mutedLabel("Secure, simple and designed to make car insurance easier.", 13);
+        heroText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        hero.add(heroTitle);
+        hero.add(Box.createVerticalStrut(8));
+        hero.add(heroText);
+
         JButton newQuote = button("START NEW QUOTE", 320, 46);
         newQuote.setAlignmentX(Component.CENTER_ALIGNMENT);
         onClick(newQuote, () -> showCard(CARDS[1]));
 
-        JLabel resume = mutedLabel("Resume a saved quote", 13);
+        JLabel resume = mutedLabel("Already have an account? Login below to view saved quotes.", 13);
         resume.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JSeparator sep = new JSeparator();
-        sep.setForeground(BORDER);
-
-        JLabel loginHint = mutedLabel("Login to view saved quotes", 13);
-        loginHint.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         loginEmailTf = textField();
         loginPasswordPf = passField();
 
-        loginEmailTf.setMaximumSize(new Dimension(320, FIELD_H));
-        loginPasswordPf.setMaximumSize(new Dimension(320, FIELD_H));
+        loginEmailTf.setPreferredSize(new Dimension(260, FIELD_H));
+        loginEmailTf.setMaximumSize(new Dimension(260, FIELD_H));
 
-        JButton login = button("Login", 130, 38);
+        loginPasswordPf.setPreferredSize(new Dimension(260, FIELD_H));
+        loginPasswordPf.setMaximumSize(new Dimension(260, FIELD_H));
+
+        JPanel fieldsWrap = new JPanel();
+        fieldsWrap.setBackground(PANEL_BG);
+        fieldsWrap.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(18, 20, 22, 20)
+        ));
+        fieldsWrap.setLayout(new BoxLayout(fieldsWrap, BoxLayout.Y_AXIS));
+        fieldsWrap.setMaximumSize(new Dimension(420, Integer.MAX_VALUE));
+        fieldsWrap.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel loginHint = mutedLabel("Customer login or admin access", 13);
+        loginHint.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel emailGroup = new JPanel();
+        emailGroup.setBackground(PANEL_BG);
+        emailGroup.setLayout(new BoxLayout(emailGroup, BoxLayout.Y_AXIS));
+        emailGroup.setAlignmentX(Component.CENTER_ALIGNMENT);
+        emailGroup.setMaximumSize(new Dimension(260, 60));
+        emailGroup.setPreferredSize(new Dimension(260, 60));
+
+        JLabel emailLabel = labelLeft("Email address:", 13);
+        emailLabel.setForeground(MUTED);
+        emailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        loginEmailTf.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        emailGroup.add(emailLabel);
+        emailGroup.add(Box.createVerticalStrut(6));
+        emailGroup.add(loginEmailTf);
+
+        JPanel passwordGroup = new JPanel();
+        passwordGroup.setBackground(PANEL_BG);
+        passwordGroup.setLayout(new BoxLayout(passwordGroup, BoxLayout.Y_AXIS));
+        passwordGroup.setAlignmentX(Component.CENTER_ALIGNMENT);
+        passwordGroup.setMaximumSize(new Dimension(260, 60));
+        passwordGroup.setPreferredSize(new Dimension(260, 60));
+
+        JLabel passwordLabel = labelLeft("Password:", 13);
+        passwordLabel.setForeground(MUTED);
+        passwordLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        loginPasswordPf.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        passwordGroup.add(passwordLabel);
+        passwordGroup.add(Box.createVerticalStrut(6));
+        passwordGroup.add(loginPasswordPf);
+
+        JButton login = button("LOGIN", 170, 44);
         login.setAlignmentX(Component.CENTER_ALIGNMENT);
         onClick(login, this::handleLogin);
 
-        center.add(Box.createVerticalStrut(22));
+        fieldsWrap.add(loginHint);
+        fieldsWrap.add(Box.createVerticalStrut(14));
+        fieldsWrap.add(emailGroup);
+        fieldsWrap.add(Box.createVerticalStrut(12));
+        fieldsWrap.add(passwordGroup);
+        fieldsWrap.add(Box.createVerticalStrut(16));
+        fieldsWrap.add(login);
+
+        center.add(Box.createVerticalStrut(6));
+        center.add(hero);
+        center.add(Box.createVerticalStrut(18));
         center.add(newQuote);
-        center.add(Box.createVerticalStrut(12));
+        center.add(Box.createVerticalStrut(10));
         center.add(resume);
-        center.add(Box.createVerticalStrut(28));
-        center.add(sep);
-        center.add(Box.createVerticalStrut(28));
-        center.add(loginHint);
-        center.add(Box.createVerticalStrut(12));
-        center.add(loginEmailTf);
-        center.add(Box.createVerticalStrut(12));
-        center.add(loginPasswordPf);
-        center.add(Box.createVerticalStrut(16));
-        center.add(login);
+        center.add(Box.createVerticalStrut(18));
+        center.add(fieldsWrap);
         center.add(Box.createVerticalGlue());
 
         card.add(top, BorderLayout.NORTH);
@@ -335,6 +533,7 @@ public class Main {
         root.add(card);
         return root;
     }
+
 
     // Screen 2
     private JPanel vehicleScreen() {
@@ -350,7 +549,15 @@ public class Main {
         JLabel helper = new JLabel("Select a make and model. The engine size and year will update automatically.");
         helper.setForeground(MUTED);
         helper.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        helper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel helperWrap = new JPanel(new BorderLayout());
+        helperWrap.setBackground(CARD_BG);
+        helperWrap.setBorder(new EmptyBorder(0, 0, 0, 0));
+        helperWrap.setPreferredSize(new Dimension(780, 22));
+        helperWrap.setMinimumSize(new Dimension(780, 22));
+        helperWrap.setMaximumSize(new Dimension(780, 22));
+        helperWrap.setAlignmentX(Component.CENTER_ALIGNMENT);
+        helperWrap.add(helper, BorderLayout.WEST);
 
         JPanel form = new JPanel();
         form.setBackground(CARD_BG);
@@ -468,7 +675,7 @@ public class Main {
         nav.add(back, BorderLayout.WEST);
         nav.add(next, BorderLayout.EAST);
 
-        wrapper.add(helper);
+        wrapper.add(helperWrap);
         wrapper.add(Box.createVerticalStrut(22));
         wrapper.add(form);
         wrapper.add(Box.createVerticalGlue());
@@ -709,19 +916,19 @@ public class Main {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
 
-        nameTf = textField();
-        surnameTf = textField();
+        fullNameTf = textField();
+        fullNameTf.setToolTipText("Enter your full name (e.g. John Smith)");
+
         addressTf = textField();
         phoneTf = textField();
         emailTf = textField();
         passwordPf = passField();
 
-        addRow(form, gbc, 0, "Name", nameTf);
-        addRow(form, gbc, 1, "Surname", surnameTf);
-        addRow(form, gbc, 2, "Address", addressTf);
-        addRow(form, gbc, 3, "Phone", phoneTf);
-        addRow(form, gbc, 4, "Email", emailTf);
-        addRow(form, gbc, 5, "Password", passwordPf);
+        addRow(form, gbc, 0, "Full Name", fullNameTf);
+        addRow(form, gbc, 1, "Address", addressTf);
+        addRow(form, gbc, 2, "Phone", phoneTf);
+        addRow(form, gbc, 3, "Email", emailTf);
+        addRow(form, gbc, 4, "Password", passwordPf);
 
         JPanel nav = new JPanel(new BorderLayout());
         nav.setBackground(CARD_BG);
@@ -762,15 +969,14 @@ public class Main {
     }
 
     private void createCustomerAndQuote() {
-        String name = safe(nameTf.getText());
-        String surname = safe(surnameTf.getText());
+        String name = safe(fullNameTf.getText());
         String address = safe(addressTf.getText());
         String phone = safe(phoneTf.getText());
         String email = safe(emailTf.getText());
         String password = new String(passwordPf.getPassword());
 
         try {
-            currentCustomer = customerDAO.register(name, surname, address, phone, email, password);
+            currentCustomer = customerDAO.register(name, address, phone, email, password);
         } catch (Exception ex) {
             if ("Email already registered".equalsIgnoreCase(ex.getMessage())) {
                 try {
@@ -809,6 +1015,7 @@ public class Main {
             JOptionPane.showMessageDialog(frame, ex.getMessage(), "Quote save failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
         quoteOpenedFromMyQuotes = true;
         updateQuoteLabels();
         showCard(CARDS[5]);
@@ -883,32 +1090,45 @@ public class Main {
     private double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
-
     // Screen 6
     private JPanel quoteScreen() {
         JPanel root = basePanel();
         JPanel card = cardPanel();
 
-        card.add(topBar("Your Quote", 5), BorderLayout.NORTH);
+        card.add(topBar("Quote Summary", 5), BorderLayout.NORTH);
 
         JPanel centerWrap = new JPanel();
         centerWrap.setBackground(CARD_BG);
         centerWrap.setLayout(new BoxLayout(centerWrap, BoxLayout.Y_AXIS));
 
+        JPanel premiumCard = new JPanel();
+        premiumCard.setBackground(PANEL_BG);
+        premiumCard.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(18, 18, 18, 18)
+        ));
+        premiumCard.setLayout(new BoxLayout(premiumCard, BoxLayout.Y_AXIS));
+        premiumCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        premiumCard.setMaximumSize(new Dimension(760, 110));
+
         JLabel bigPriceTitle = labelCenter("Estimated Premium", 14);
         bigPriceTitle.setForeground(MUTED);
         bigPriceTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        qPrice = labelCenter("£0.00", 34);
-        qPrice.setFont(new Font("SansSerif", Font.BOLD, 34));
-        qPrice.setForeground(PRIMARY);
+        qPrice = labelCenter("£0.00", 36);
+        qPrice.setFont(new Font("SansSerif", Font.BOLD, 36));
+        qPrice.setForeground(new Color(96, 165, 250));
         qPrice.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        premiumCard.add(bigPriceTitle);
+        premiumCard.add(Box.createVerticalStrut(8));
+        premiumCard.add(qPrice);
+
         JPanel infoCard = new JPanel(new GridLayout(5, 2, 12, 12));
-        infoCard.setBackground(new Color(249, 250, 252));
+        infoCard.setBackground(PANEL_BG);
         infoCard.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
-                new EmptyBorder(16, 16, 16, 16)
+                new EmptyBorder(18, 18, 18, 18)
         ));
 
         qVehicle = labelLeft("", 12);
@@ -928,11 +1148,16 @@ public class Main {
         infoCard.add(labelLeftBold("Status", 12));
         infoCard.add(qStatus);
 
-        centerWrap.add(Box.createVerticalStrut(10));
-        centerWrap.add(bigPriceTitle);
-        centerWrap.add(Box.createVerticalStrut(6));
-        centerWrap.add(qPrice);
-        centerWrap.add(Box.createVerticalStrut(26));
+        JLabel helper = new JLabel("Review the quote details below before saving or submitting for admin review.");
+        helper.setForeground(MUTED);
+        helper.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        helper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        centerWrap.add(Box.createVerticalStrut(8));
+        centerWrap.add(helper);
+        centerWrap.add(Box.createVerticalStrut(18));
+        centerWrap.add(premiumCard);
+        centerWrap.add(Box.createVerticalStrut(22));
         centerWrap.add(infoCard);
         centerWrap.add(Box.createVerticalGlue());
 
@@ -943,11 +1168,12 @@ public class Main {
         onClick(back, () -> {
             if (quoteOpenedFromMyQuotes) {
                 quoteOpenedFromMyQuotes = false;
-                showCard(CARDS[7]); // MY_QUOTES
+                showCard(CARDS[7]);
             } else {
-                showCard(CARDS[4]); // PERSONAL
+                showCard(CARDS[4]);
             }
         });
+
         JButton save = secondaryButton("Save");
         save.addActionListener(e ->
                 JOptionPane.showMessageDialog(frame, "Quote saved.", "Saved", JOptionPane.INFORMATION_MESSAGE)
@@ -968,7 +1194,6 @@ public class Main {
         JButton logout = secondaryButton("Logout");
         logout.addActionListener(e -> logoutCustomer());
 
-
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         right.setBackground(CARD_BG);
         right.add(logout);
@@ -984,14 +1209,13 @@ public class Main {
         root.add(card);
         return root;
     }
-
     // Screen 7
     private JPanel adminScreen() {
         JPanel root = basePanel();
         JPanel card = cardPanel();
         JButton viewDetails = secondaryButton("View Details");
 
-        card.add(topBar("Admin Panel", 5), BorderLayout.NORTH);
+        card.add(topBar("Admin Dashboard", 5), BorderLayout.NORTH);
 
         String[] cols = {"Quote ID", "Customer Email", "Vehicle", "Policy", "Premium", "Status", "Created"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
@@ -1001,22 +1225,20 @@ public class Main {
         };
 
         JTable table = new JTable(model);
-        table.setRowHeight(28);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        JScrollPane scroll = new JScrollPane(table);
+        styleTable(table, scroll);
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
                     int row = table.getSelectedRow();
-                    int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
-                    showQuoteDetailsDialog(quoteId);
+                    if (row != -1) {
+                        int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
+                        showQuoteDetailsDialog(quoteId);
+                    }
                 }
             }
         });
-
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(new LineBorder(BORDER, 1, true));
 
         JButton refresh = secondaryButton("Refresh");
         JButton approve = button("Approve");
@@ -1089,30 +1311,39 @@ public class Main {
             showQuoteDetailsDialog(quoteId);
         });
 
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) {
-                        int quoteId = Integer.parseInt(String.valueOf(table.getValueAt(selectedRow, 0)));
-                        showQuoteDetailsDialog(quoteId);
-                    }
-                }
-            }
-        });
-
         logout.addActionListener(e -> showCard(CARDS[0]));
 
-        JPanel center = new JPanel(new BorderLayout(0, 12));
+        JPanel center = new JPanel();
         center.setBackground(CARD_BG);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
 
-        JLabel hint = new JLabel("Select a quote and use View Details, Approve or Reject to update its status.");
+        JPanel statsCard = new JPanel(new BorderLayout());
+        statsCard.setBackground(PANEL_BG);
+        statsCard.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(14, 16, 14, 16)
+        ));
+        statsCard.setMaximumSize(new Dimension(800, 70));
+        statsCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel title = labelLeftBold("Quote Management", 16);
+        JLabel hint = new JLabel("Review submissions, inspect full details, and approve or reject quote requests.");
         hint.setForeground(MUTED);
         hint.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        center.add(hint, BorderLayout.NORTH);
-        center.add(scroll, BorderLayout.CENTER);
+        JPanel titleWrap = new JPanel();
+        titleWrap.setBackground(PANEL_BG);
+        titleWrap.setLayout(new BoxLayout(titleWrap, BoxLayout.Y_AXIS));
+        titleWrap.add(title);
+        titleWrap.add(Box.createVerticalStrut(4));
+        titleWrap.add(hint);
+
+        statsCard.add(titleWrap, BorderLayout.CENTER);
+
+        center.add(statsCard);
+        center.add(Box.createVerticalStrut(18));
+        center.add(scroll);
+        center.add(Box.createVerticalGlue());
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottom.setBackground(CARD_BG);
@@ -1152,19 +1383,15 @@ public class Main {
         card.add(topBar("My Quotes", 5), BorderLayout.NORTH);
 
         String[] cols = {"Quote ID", "Vehicle", "Policy", "Premium", "Status", "Created"};
-        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(cols, 0) {
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int row, int col) {
                 return false;
             }
         };
 
         JTable table = new JTable(model);
-        table.setRowHeight(28);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(new LineBorder(BORDER, 1, true));
+        styleTable(table, scroll);
 
         JButton refresh = secondaryButton("Refresh");
         JButton view = button("View");
@@ -1176,7 +1403,7 @@ public class Main {
                 model.setRowCount(0);
                 if (currentCustomer == null) return;
 
-                java.util.List<QuoteDAO.CustomerQuoteRow> rows = quoteDAO.getQuotesForCustomer(currentCustomer.getId());
+                List<QuoteDAO.CustomerQuoteRow> rows = quoteDAO.getQuotesForCustomer(currentCustomer.getId());
                 for (QuoteDAO.CustomerQuoteRow r : rows) {
                     model.addRow(new Object[]{
                             r.id,
@@ -1203,7 +1430,10 @@ public class Main {
 
         view.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) return;
+            if (row < 0) {
+                JOptionPane.showMessageDialog(frame, "Please select a quote first.");
+                return;
+            }
 
             int quoteId = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
             String vehicle = String.valueOf(model.getValueAt(row, 1));
@@ -1220,15 +1450,37 @@ public class Main {
             showCard(CARDS[5]);
         });
 
-        JPanel center = new JPanel(new BorderLayout(0, 12));
+        JPanel center = new JPanel();
         center.setBackground(CARD_BG);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
 
-        JLabel hint = new JLabel("Select a quote and click View, or start a new quote.");
+        JPanel summaryCard = new JPanel(new BorderLayout());
+        summaryCard.setBackground(PANEL_BG);
+        summaryCard.setBorder(new CompoundBorder(
+                new LineBorder(BORDER, 1, true),
+                new EmptyBorder(14, 16, 14, 16)
+        ));
+        summaryCard.setMaximumSize(new Dimension(800, 70));
+        summaryCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel title = labelLeftBold("Customer Quote History", 16);
+        JLabel hint = new JLabel("Review previous quotes, check statuses, or start a new application.");
         hint.setForeground(MUTED);
         hint.setFont(new Font("SansSerif", Font.PLAIN, 13));
 
-        center.add(hint, BorderLayout.NORTH);
-        center.add(scroll, BorderLayout.CENTER);
+        JPanel titleWrap = new JPanel();
+        titleWrap.setBackground(PANEL_BG);
+        titleWrap.setLayout(new BoxLayout(titleWrap, BoxLayout.Y_AXIS));
+        titleWrap.add(title);
+        titleWrap.add(Box.createVerticalStrut(4));
+        titleWrap.add(hint);
+
+        summaryCard.add(titleWrap, BorderLayout.CENTER);
+
+        center.add(summaryCard);
+        center.add(Box.createVerticalStrut(18));
+        center.add(scroll);
+        center.add(Box.createVerticalGlue());
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottom.setBackground(CARD_BG);
@@ -1256,7 +1508,7 @@ public class Main {
         qStatus.setText(String.valueOf(currentQuote.getStatus()));
     }
 
-    // 👇 PASTE HERE
+    //
     private void clearAllFields() {
         if (makeCb != null) makeCb.setSelectedIndex(0);
 
@@ -1272,8 +1524,7 @@ public class Main {
         if (ageCb != null) ageCb.setSelectedIndex(0);
         if (ncbCb != null) ncbCb.setSelectedIndex(0);
 
-        if (nameTf != null) nameTf.setText("");
-        if (surnameTf != null) surnameTf.setText("");
+        if (fullNameTf != null) fullNameTf.setText("");
         if (addressTf != null) addressTf.setText("");
         if (phoneTf != null) phoneTf.setText("");
         if (emailTf != null) emailTf.setText("");
@@ -1290,59 +1541,67 @@ public class Main {
             }
 
             JDialog dialog = new JDialog(frame, "Quote Details", true);
-            dialog.setSize(520, 420);
+            dialog.setSize(620, 470);
             dialog.setLocationRelativeTo(frame);
 
             JPanel panel = new JPanel(new BorderLayout(12, 12));
-            panel.setBorder(new EmptyBorder(16, 16, 16, 16));
-            panel.setBackground(Color.WHITE);
+            panel.setBorder(new EmptyBorder(18, 18, 18, 18));
+            panel.setBackground(DIALOG_BG);
 
-            JPanel details = new JPanel(new GridLayout(0, 2, 10, 10));
-            details.setBackground(Color.WHITE);
+            JLabel title = new JLabel("Quote Details");
+            title.setForeground(TEXT);
+            title.setFont(new Font("SansSerif", Font.BOLD, 22));
 
-            details.add(new JLabel("Quote ID:"));
-            details.add(new JLabel(String.valueOf(q.id)));
+            JPanel details = new JPanel(new GridLayout(0, 2, 12, 12));
+            details.setBackground(DIALOG_BG);
 
-            details.add(new JLabel("Customer:"));
-            details.add(new JLabel(q.customerName + " " + q.customerSurname));
+            details.add(labelLeftBold("Quote ID:", 13));
+            details.add(labelLeft(String.valueOf(q.id), 13));
 
-            details.add(new JLabel("Email:"));
-            details.add(new JLabel(q.customerEmail));
+            details.add(labelLeftBold("Customer:", 13));
+            details.add(labelLeft(q.customerName + " " + q.customerSurname, 13));
 
-            details.add(new JLabel("Phone:"));
-            details.add(new JLabel(q.customerPhone));
+            details.add(labelLeftBold("Email:", 13));
+            details.add(labelLeft(q.customerEmail, 13));
 
-            details.add(new JLabel("Address:"));
-            details.add(new JLabel(q.customerAddress));
+            details.add(labelLeftBold("Phone:", 13));
+            details.add(labelLeft(q.customerPhone, 13));
 
-            details.add(new JLabel("Vehicle:"));
-            details.add(new JLabel(q.vehicleText));
+            details.add(labelLeftBold("Address:", 13));
+            details.add(labelLeft(q.customerAddress, 13));
 
-            details.add(new JLabel("Driver Age:"));
-            details.add(new JLabel(String.valueOf(q.driverAge)));
+            details.add(labelLeftBold("Vehicle:", 13));
+            details.add(labelLeft(q.vehicleText, 13));
 
-            details.add(new JLabel("No Claim Bonus:"));
-            details.add(new JLabel(String.valueOf(q.ncbYears)));
+            details.add(labelLeftBold("Driver Age:", 13));
+            details.add(labelLeft(String.valueOf(q.driverAge), 13));
 
-            details.add(new JLabel("Policy Type:"));
-            details.add(new JLabel(q.policyType));
+            details.add(labelLeftBold("No Claim Bonus:", 13));
+            details.add(labelLeft(String.valueOf(q.ncbYears), 13));
 
-            details.add(new JLabel("Premium:"));
-            details.add(new JLabel("£" + round2(q.premium)));
+            details.add(labelLeftBold("Policy Type:", 13));
+            details.add(labelLeft(q.policyType, 13));
 
-            details.add(new JLabel("Status:"));
-            details.add(new JLabel(q.status));
+            details.add(labelLeftBold("Premium:", 13));
+            JLabel premiumValue = labelLeft("£" + round2(q.premium), 14);
+            premiumValue.setForeground(new Color(96, 165, 250));
+            premiumValue.setFont(new Font("SansSerif", Font.BOLD, 14));
+            details.add(premiumValue);
 
-            details.add(new JLabel("Created:"));
-            details.add(new JLabel(q.createdAt));
+            details.add(labelLeftBold("Status:", 13));
+            details.add(labelLeft(q.status, 13));
 
-            JButton close = new JButton("Close");
+            details.add(labelLeftBold("Created:", 13));
+            details.add(labelLeft(q.createdAt, 13));
+
+            JButton close = secondaryButton("Close");
             close.addActionListener(e -> dialog.dispose());
 
             JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            bottom.setBackground(Color.WHITE);
+            bottom.setBackground(DIALOG_BG);
             bottom.add(close);
 
+            panel.add(title, BorderLayout.NORTH);
             panel.add(details, BorderLayout.CENTER);
             panel.add(bottom, BorderLayout.SOUTH);
 

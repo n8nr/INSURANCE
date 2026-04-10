@@ -4,11 +4,20 @@ import java.sql.ResultSet;
 
 public class CustomerDAO {
 
-    public Customer register(String name, String surname, String address, String phone, String email, String password) throws Exception {
-        if (email == null || email.trim().isEmpty()) throw new IllegalArgumentException("Email required");
+    public Customer register(String fullName, String address, String phone, String email, String password) throws Exception {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email required");
+        }
+
+        String cleanedFullName = fullName == null ? "" : fullName.trim();
+        String[] parts = cleanedFullName.split("\\s+", 2);
+        String name = parts.length > 0 ? parts[0] : "";
+        String surname = parts.length > 1 ? parts[1] : "";
 
         try (Connection c = DB.getConnection()) {
-            try (PreparedStatement check = c.prepareStatement("SELECT id FROM customers WHERE lower(email)=lower(?)")) {
+            try (PreparedStatement check = c.prepareStatement(
+                    "SELECT id FROM customers WHERE lower(email)=lower(?)"
+            )) {
                 check.setString(1, email.trim());
                 try (ResultSet rs = check.executeQuery()) {
                     if (rs.next()) {
