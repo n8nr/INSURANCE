@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
@@ -59,17 +60,19 @@ public class Main {
     private boolean quoteOpenedFromMyQuotes = false;
 
     public static void main(String[] ignored) {
-        SwingUtilities.invokeLater(() -> new Main().start());
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            new Main().start();
+        });
     }
 
     private void start() {
         repo.loadCars();
         DB.init();
-
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {
-        }
 
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(FRAME_W, FRAME_H);
@@ -154,20 +157,40 @@ public class Main {
         return l;
     }
 
-    private JButton button(String text, int w, int h) {
-        JButton b = new JButton(text);
+    private void stylePrimaryButton(JButton b) {
+        b.setUI(new BasicButtonUI());
         b.setFocusPainted(false);
         b.setForeground(Color.WHITE);
         b.setBackground(PRIMARY);
         b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(false);
+        b.setFont(new Font("SansSerif", Font.BOLD, 14));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setMargin(new Insets(0, 0, 0, 0));
+    }
+
+    private void styleSecondaryButton(JButton b) {
+        b.setUI(new BasicButtonUI());
+        b.setFocusPainted(false);
+        b.setForeground(TEXT);
+        b.setBackground(PANEL_BG);
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(true);
+        b.setFont(new Font("SansSerif", Font.BOLD, 14));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setMargin(new Insets(0, 0, 0, 0));
+    }
+
+    private JButton button(String text, int w, int h) {
+        JButton b = new JButton(text);
+        stylePrimaryButton(b);
+
         b.setPreferredSize(new Dimension(w, h));
         b.setMinimumSize(new Dimension(w, h));
         b.setMaximumSize(new Dimension(w, h));
-        b.setFont(new Font("SansSerif", Font.BOLD, 14));
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        b.setContentAreaFilled(true);
         b.setBorder(BorderFactory.createEmptyBorder());
-        b.setMargin(new Insets(0, 0, 0, 0));
 
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -184,20 +207,15 @@ public class Main {
 
     private JButton secondaryButton(String text) {
         JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setForeground(TEXT);
-        b.setBackground(PANEL_BG);
-        b.setOpaque(true);
+        styleSecondaryButton(b);
+
         b.setPreferredSize(new Dimension(BTN_W, BTN_H));
         b.setMinimumSize(new Dimension(BTN_W, BTN_H));
         b.setMaximumSize(new Dimension(BTN_W, BTN_H));
-        b.setFont(new Font("SansSerif", Font.BOLD, 14));
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
                 new EmptyBorder(0, 0, 0, 0)
         ));
-        b.setMargin(new Insets(0, 0, 0, 0));
 
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -211,6 +229,7 @@ public class Main {
 
         return b;
     }
+
     private JButton button(String text) {
         return button(text, BTN_W, BTN_H);
     }
@@ -224,6 +243,7 @@ public class Main {
         f.setBackground(INPUT_BG);
         f.setForeground(TEXT);
         f.setCaretColor(TEXT);
+        f.setOpaque(true);
         f.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
                 new EmptyBorder(6, 10, 6, 10)
@@ -240,6 +260,7 @@ public class Main {
         f.setBackground(INPUT_BG);
         f.setForeground(TEXT);
         f.setCaretColor(TEXT);
+        f.setOpaque(true);
         f.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
                 new EmptyBorder(6, 10, 6, 10)
@@ -261,15 +282,14 @@ public class Main {
         cb.setMaximumSize(d);
 
         cb.setBackground(INPUT_BG);
-        cb.setForeground(new Color(30, 30, 30)); // dark text
+        cb.setForeground(TEXT);
         cb.setOpaque(true);
+        cb.setFocusable(false);
 
         cb.setBorder(new CompoundBorder(
                 new LineBorder(BORDER, 1, true),
                 new EmptyBorder(2, 8, 2, 8)
         ));
-
-        cb.setFocusable(false);
 
         cb.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -286,14 +306,15 @@ public class Main {
 
                 lbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
                 lbl.setOpaque(true);
+                lbl.setBorder(new EmptyBorder(0, 8, 0, 8));
 
                 String text = (value == null) ? "" : value.toString();
                 lbl.setText(text);
 
                 if (index == -1) {
                     // selected value shown when combo box is closed
-                    lbl.setBackground(Color.WHITE);
-                    lbl.setForeground(Color.BLACK);
+                    lbl.setBackground(INPUT_BG);
+                    lbl.setForeground(TEXT);
                 } else if (isSelected) {
                     // highlighted item in dropdown list
                     lbl.setBackground(PRIMARY);
@@ -304,7 +325,6 @@ public class Main {
                     lbl.setForeground(Color.BLACK);
                 }
 
-                lbl.setBorder(new EmptyBorder(0, 8, 0, 8));
                 return lbl;
             }
         });
@@ -386,7 +406,6 @@ public class Main {
         return wrap;
     }
 
-
     private void styleTable(JTable table, JScrollPane scroll) {
         table.setBackground(PANEL_BG);
         table.setForeground(TEXT);
@@ -407,7 +426,6 @@ public class Main {
         scroll.setBackground(PANEL_BG);
         scroll.setBorder(new LineBorder(BORDER, 1, true));
     }
-
 
     // Screen 1
     private JPanel loginScreen() {
@@ -534,7 +552,6 @@ public class Main {
         return root;
     }
 
-
     // Screen 2
     private JPanel vehicleScreen() {
         JPanel root = basePanel();
@@ -590,6 +607,19 @@ public class Main {
             yearCb.addItem(String.valueOf(y));
         }
 
+        engineCb = comboBox(330);
+        colourCb = comboBox(330);
+
+        engineCb.addItem("");
+
+        colourCb.addItem("");
+        colourCb.addItem("Black");
+        colourCb.addItem("White");
+        colourCb.addItem("Silver");
+        colourCb.addItem("Blue");
+        colourCb.addItem("Red");
+        colourCb.addItem("Grey");
+
         makeCb.addActionListener(evt -> {
             String selectedMake = safe(makeCb.getSelectedItem());
 
@@ -619,19 +649,6 @@ public class Main {
 
         JPanel row2Fields = new JPanel(new GridLayout(1, 2, 14, 0));
         row2Fields.setBackground(CARD_BG);
-
-        engineCb = comboBox(330);
-        colourCb = comboBox(330);
-
-        engineCb.addItem("");
-
-        colourCb.addItem("");
-        colourCb.addItem("Black");
-        colourCb.addItem("White");
-        colourCb.addItem("Silver");
-        colourCb.addItem("Blue");
-        colourCb.addItem("Red");
-        colourCb.addItem("Grey");
 
         modelCb.addActionListener(evt -> {
             String make = safe(makeCb.getSelectedItem());
@@ -1016,7 +1033,7 @@ public class Main {
             return;
         }
 
-        quoteOpenedFromMyQuotes = true;
+        quoteOpenedFromMyQuotes = false;
         updateQuoteLabels();
         showCard(CARDS[5]);
     }
@@ -1090,6 +1107,7 @@ public class Main {
     private double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
+
     // Screen 6
     private JPanel quoteScreen() {
         JPanel root = basePanel();
@@ -1209,6 +1227,7 @@ public class Main {
         root.add(card);
         return root;
     }
+
     // Screen 7
     private JPanel adminScreen() {
         JPanel root = basePanel();
@@ -1423,6 +1442,8 @@ public class Main {
 
         newQuoteBtn.addActionListener(e -> {
             currentQuote = null;
+            quoteOpenedFromMyQuotes = false;
+            clearAllFields();
             showCard(CARDS[1]);
         });
 
@@ -1508,7 +1529,6 @@ public class Main {
         qStatus.setText(String.valueOf(currentQuote.getStatus()));
     }
 
-    //
     private void clearAllFields() {
         if (makeCb != null) makeCb.setSelectedIndex(0);
 
@@ -1518,11 +1538,21 @@ public class Main {
         }
 
         if (yearCb != null) yearCb.setSelectedIndex(0);
-        if (engineCb != null) engineCb.setSelectedIndex(0);
+
+        if (engineCb != null) {
+            engineCb.removeAllItems();
+            engineCb.addItem("");
+            engineCb.setSelectedIndex(0);
+        }
+
         if (colourCb != null) colourCb.setSelectedIndex(0);
 
         if (ageCb != null) ageCb.setSelectedIndex(0);
         if (ncbCb != null) ncbCb.setSelectedIndex(0);
+
+        if (policyThirdParty != null) policyThirdParty.setSelected(false);
+        if (policyTpft != null) policyTpft.setSelected(false);
+        if (policyComprehensive != null) policyComprehensive.setSelected(false);
 
         if (fullNameTf != null) fullNameTf.setText("");
         if (addressTf != null) addressTf.setText("");
@@ -1612,5 +1642,4 @@ public class Main {
             JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }
